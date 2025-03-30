@@ -4,7 +4,7 @@ const TeacherAssigning = () => {
         window.location.href = '/components/addQuestionnaires'; // Navigate to this URL when left card is clicked
     };
     const handleRightCardClick = () => {
-        window.location.href = '/components/oldquiz'; 
+        window.location.href = '/components/finalresult'; 
     };
     return (
         <div style={styles.background}>
@@ -16,8 +16,8 @@ const TeacherAssigning = () => {
                         <p style={styles.cardText}>Start a new quiz </p>
                     </div>
                     <div style={styles.rightCard} onClick={handleRightCardClick}>
-                        <h2 style={styles.cardTitle}>Old Quiz</h2>
-                        <p style={styles.cardText}>Review your old quizzes and result poll</p>
+                        <h2 style={styles.cardTitle}>Result  Quiz</h2>
+                        <p style={styles.cardText}>Review student  result poll</p>
                     </div>
                 </div>
             </div>
@@ -31,7 +31,7 @@ const styles = {
         alignItems: 'center',
         height: '100vh',
         width: '100%',
-        backgroundColor: '#f0f0f0', // Solid background color
+        backgroundColor: '#f0f0f0', 
         color: '#333',
     },
     container: {

@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 const OldQuiz = () => {
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [results, setResults] = useState([]);
+    const navigate = useNavigate();
     useEffect(() => {
         const fetchQuizzes = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/quizzes'); // Fetch quizzes from the backend
+                const response = await axios.get('http://localhost:5000/api/quizzes');
                 setQuizzes(response.data);
             } catch (err) {
                 setError('Error fetching quizzes');
@@ -19,10 +22,19 @@ const OldQuiz = () => {
     }, []);
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/api/deleteQuiz/${id}`); // Call delete endpoint
-            setQuizzes(quizzes.filter(quiz => quiz._id !== id)); // Update state to remove the deleted quiz
+            await axios.delete(`http://localhost:5000/api/deleteQuiz/${id}`);
+            setQuizzes(quizzes.filter(quiz => quiz._id !== id));
         } catch (err) {
             setError('Error deleting quiz');
+        }
+    };
+    const viewResults = async (quizId) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/getQuizResults/${quizId}`);
+            setResults(response.data);
+            navigate('/components/finalresult');
+        } catch (err) {
+            setError('Error fetching quiz results');
         }
     };
     if (loading) return <div style={styles.loading}>Loading...</div>;
@@ -30,28 +42,40 @@ const OldQuiz = () => {
     return (
         <div style={styles.quizzesContainer}>
             {quizzes.map((quiz) => (
-                <div style={styles.quizCard} key={quiz._id}>
+                <div 
+                    style={styles.quizCard} 
+                    key={quiz._id} 
+                    onClick={() => viewResults(quiz._id)} // Navigate on card click
+                >
                     <h3 style={styles.quizTitle}>{quiz.name}</h3>
                     <div style={styles.buttonContainer}>
                         <button 
-                            style={styles.takeQuizButton} 
-                            onClick={() => alert(`Viewing results for: ${quiz.name}`)}
-                        >
-                            View Results
-                        </button>
-                        <button 
                             style={styles.deleteButton} 
-                            onClick={() => handleDelete(quiz._id)} // Call delete handler
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent card click event
+                                handleDelete(quiz._id);
+                            }}
                         >
                             🗑️
                         </button>
                     </div>
                 </div>
             ))}
+            {results.length > 0 && (
+                <div style={styles.resultsContainer}>
+                    <h4>Results:</h4>
+                    <ul>
+                        {results.map((result) => (
+                            <li key={result.studentId}>
+                                Student ID: {result.studentId}, Correct Answers: {result.percentage.toFixed(2)}%
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     );
 };
-// Internal CSS styles
 const styles = {
     quizzesContainer: {
         display: 'flex',
@@ -67,6 +91,7 @@ const styles = {
         width: '200px',
         textAlign: 'center',
         boxShadow: '2px 2px 12px rgba(0, 0, 0, 0.1)',
+        cursor: 'pointer', // Change cursor to pointer
     },
     quizTitle: {
         margin: '10px 0',
@@ -74,17 +99,8 @@ const styles = {
     },
     buttonContainer: {
         display: 'flex',
-        justifyContent: 'center', // Center the buttons
+        justifyContent: 'center',
         marginTop: '10px',
-    },
-    takeQuizButton: {
-        padding: '10px 15px',
-        backgroundColor: '#007BFF',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        marginRight: '5px', // Add margin between buttons
     },
     deleteButton: {
         backgroundColor: 'transparent',
@@ -101,6 +117,9 @@ const styles = {
         color: 'red',
         textAlign: 'center',
         fontSize: '18px',
+        marginTop: '20px',
+    },
+    resultsContainer: {
         marginTop: '20px',
     },
 };

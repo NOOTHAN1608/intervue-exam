@@ -9,11 +9,7 @@ import AddQuestion from "./components/addQuestionnaires";
 import StudentDashboard from "./components/studentdashboard";
 import TeacherAssign from "./components/techerassign";
 import OldQuiz from "./components/oldquiz";
-
-
-
-
-
+import FinalResults from "./components/finalresult";
 
 
 function App() {
@@ -29,6 +25,7 @@ function App() {
         <Route path="/components/studentdashboard" element={<StudentDashboard/>} />
         <Route path="/components/techerassign" element={<TeacherAssign/>} />
         <Route path="/components/oldquiz" element={<OldQuiz/>} />
+        <Route path="/components/finalresult" element={<FinalResults/>} />
         
       </Routes>
     </Router>

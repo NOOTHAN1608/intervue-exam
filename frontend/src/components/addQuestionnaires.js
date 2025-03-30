@@ -3,6 +3,7 @@ import axios from 'axios';
 const AddQuestion = ({ onQuestionAdded }) => {
     const [quizName, setQuizName] = useState('');
     const [showQuestionForm, setShowQuestionForm] = useState(false);
+    const [questionNumber, setQuestionNumber] = useState(''); // New state for question number
     const [question, setQuestion] = useState('');
     const [option1, setOption1] = useState('');
     const [option2, setOption2] = useState('');
@@ -13,7 +14,6 @@ const AddQuestion = ({ onQuestionAdded }) => {
     const handleQuizNameSubmit = async (e) => {
         e.preventDefault();
         try {
-            
             await axios.post('http://localhost:5000/api/createQuiz', { quizName });
             setShowQuestionForm(true); 
         } catch (error) {
@@ -24,8 +24,8 @@ const AddQuestion = ({ onQuestionAdded }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const questionData = isFillInTheBlank
-            ? { question, type: 'fill-in-the-blank', correctAnswer, quizName }
-            : { question, options: [option1, option2, option3, option4], type: 'multiple-choice', correctAnswer, quizName };
+            ? { questionNumber, question, type: 'fill-in-the-blank', correctAnswer, quizName }
+            : { questionNumber, question, options: [option1, option2, option3, option4], type: 'multiple-choice', correctAnswer, quizName };
         try {
             const response = await axios.post('http://localhost:5000/api/addQuestion', questionData);
             console.log("Response:", response.data);
@@ -34,20 +34,16 @@ const AddQuestion = ({ onQuestionAdded }) => {
             onQuestionAdded(); 
         } catch (error) {
             console.error("Error adding question:", error);
-            alert("Error adding question. Please try again.");
         }
     };
     const resetForm = () => {
+        setQuestionNumber('');
         setQuestion('');
         setOption1('');
         setOption2('');
         setOption3('');
         setOption4('');
         setCorrectAnswer(''); 
-    };
-    const handleViewResults = () => {
-        alert("Viewing results for the quiz: " + quizName);
-        // Here you can implement the actual logic to view results
     };
     return (
         <div style={styles.outerContainer}>
@@ -73,6 +69,17 @@ const AddQuestion = ({ onQuestionAdded }) => {
                 <>
                     <h1>Add Question</h1>
                     <form onSubmit={handleSubmit} style={styles.form}>
+                        <div style={styles.inputGroup}>
+                            <label htmlFor="questionNumber">Question Number:</label>
+                            <input 
+                                type="number" 
+                                id="questionNumber" 
+                                value={questionNumber} 
+                                onChange={(e) => setQuestionNumber(e.target.value)} 
+                                required 
+                                style={styles.input}
+                            />
+                        </div>
                         <div style={styles.inputGroup}>
                             <label htmlFor="question">Question:</label>
                             <input 
@@ -154,7 +161,6 @@ const AddQuestion = ({ onQuestionAdded }) => {
                             />
                         </div>
                         <button type="submit" style={styles.button}>Add Question</button>
-                        
                     </form>
                 </>
             )}

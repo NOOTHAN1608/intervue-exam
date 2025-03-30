@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-const StudentDashboard = ({ quizName, questionsCount }) => {
+const StudentDashboard = ({ quizName }) => {
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState({});
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -8,6 +8,8 @@ const StudentDashboard = ({ quizName, questionsCount }) => {
     const [isTimeUp, setIsTimeUp] = useState(false);
     const [testStarted, setTestStarted] = useState(false);
     const [studentId, setStudentId] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [pollingData, setPollingData] = useState({});
     const fetchQuestions = async () => {
         try {
             const response = await axios.get('http://localhost:5000/api/getQuestions');
@@ -17,40 +19,68 @@ const StudentDashboard = ({ quizName, questionsCount }) => {
             alert("Error fetching questions. Please try again.");
         }
     };
+    const fetchPollingData = async (questionId) => {
+        try {
+            const response = await axios.get(`/api/getPollingData/${questionId}`);
+            setPollingData(prev => ({ ...prev, [questionId]: response.data }));
+        } catch (error) {
+            console.error("Error fetching polling data:", error);
+        }
+    };
     useEffect(() => {
         fetchQuestions();
     }, []);
+    useEffect(() => {
+        if (questions.length > 0) {
+            fetchPollingData(questions[currentQuestionIndex]._id);
+        }
+    }, [currentQuestionIndex, questions]);
     const verifyStudentId = async () => {
         try {
             const response = await axios.get(`http://localhost:5000/api/verifyStudentId/${studentId}`);
-            return response.data.exists; // Assuming the API returns { exists: true/false }
+            return response.data; 
         } catch (error) {
             console.error("Error verifying Student ID:", error);
             alert("Error verifying Student ID. Please try again.");
-            return false;
+            return { exists: false, hasStartedTest: false };
         }
     };
     const startTest = async () => {
         const isValidId = await verifyStudentId();
-        if (!isValidId) {
+        if (!isValidId.exists) {
             alert("Please enter a valid Student ID.");
             return;
         }
+        if (isValidId.hasStartedTest) {
+            alert("You have already started the test. You cannot start again.");
+            return;
+        }
+        try {
+            await axios.patch(`http://localhost:5000/api/updateTestStatus`, { studentId });
+        } catch (error) {
+            console.error("Error updating test status:", error);
+            alert("Error starting the test. Please try again.");
+            return;
+        }
         setTestStarted(true);
-        setTimeLeft(15 * 60); // Set time left to 15 minutes (15 * 60 seconds)
-        const timer = setInterval(() => {
-            setTimeLeft((prevTime) => {
-                if (prevTime <= 1) {
-                    clearInterval(timer);
-                    setIsTimeUp(true);
-                    alert("Time is up! The test has ended.");
-                    window.location.href = '/'; 
-                    return 0;
-                }
-                return prevTime - 1;
-            });
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            setTimeLeft(1 * 60);
+            const timer = setInterval(() => {
+                setTimeLeft((prevTime) => {
+                    if (prevTime <= 1) {
+                        clearInterval(timer);
+                        setIsTimeUp(true);
+                        alert("Time is up! The test has ended.");
+                        window.location.href = '/'; 
+                        return 0;
+                    }
+                    return prevTime - 1;
+                });
+            }, 1000);
+            return () => clearInterval(timer);
         }, 1000);
-        return () => clearInterval(timer); // Cleanup timer on unmount
     };
     const handleAnswerChange = (selectedOption) => {
         const currentQuestion = questions[currentQuestionIndex];
@@ -59,12 +89,37 @@ const StudentDashboard = ({ quizName, questionsCount }) => {
             [currentQuestion._id]: selectedOption,
         }));
     };
+    const handleSaveAndNext = async () => {
+        const currentQuestion = questions[currentQuestionIndex];
+        if (!answers[currentQuestion._id]) {
+            alert("Please select an answer before proceeding.");
+            return; 
+        }
+        try {
+            await axios.post('http://localhost:5000/api/saveAnswer', {
+                studentId,
+                questionId: currentQuestion._id,
+                questionNumber: currentQuestion.questionNumber,
+                answer: answers[currentQuestion._id],
+            });
+            // Update polling data by adding 5 points for the selected answer
+            await axios.post('http://localhost:5000/api/updatePolling', {
+                questionId: currentQuestion._id,
+                answer: answers[currentQuestion._id],
+                points: 5
+            });
+            handleNext();
+        } catch (error) {
+            console.error("Error saving answer:", error);
+            alert("Error saving answer. Please try again.");
+        }
+    };
     const handleSubmitAnswers = async (e) => {
         e.preventDefault();
         try {
             await axios.post('http://localhost:5000/api/submitAnswers', { studentId, answers });
             alert("Answers submitted successfully!");
-            window.location.href = '/'; // Navigate to home page after submission
+            window.location.href = '/'; 
         } catch (error) {
             console.error("Error submitting answers:", error);
             alert("Error submitting answers. Please try again.");
@@ -80,22 +135,6 @@ const StudentDashboard = ({ quizName, questionsCount }) => {
             setCurrentQuestionIndex(currentQuestionIndex - 1);
         }
     };
-    const handleSaveAndNext = async () => {
-        const currentQuestion = questions[currentQuestionIndex];
-        // Save the current answer to the database
-        try {
-            await axios.post('http://localhost:5000/api/saveAnswer', {
-                questionId: currentQuestion._id,
-                answer: answers[currentQuestion._id],
-                studentId,
-            });
-            // Move to the next question
-            handleNext();
-        } catch (error) {
-            console.error("Error saving answer:", error);
-            alert("Error saving answer. Please try again.");
-        }
-    };
     if (isTimeUp) {
         return (
             <div style={styles.outerContainer}>
@@ -104,10 +143,17 @@ const StudentDashboard = ({ quizName, questionsCount }) => {
             </div>
         );
     }
+    if (loading) {
+        return (
+            <div style={styles.outerContainer}>
+                <h1>Loading questions, please wait...</h1>
+            </div>
+        );
+    }
     if (questions.length === 0) return <div>Loading questions...</div>;
     const currentQuestion = questions[currentQuestionIndex];
     return (
-        <div style={styles.outerContainer}>
+        <div style={{ ...styles.outerContainer, backgroundColor: timeLeft <= 10 ? 'red' : '#E0F7FA' }}>
             <h1>{quizName}</h1>
             {!testStarted ? (
                 <div>
@@ -125,19 +171,6 @@ const StudentDashboard = ({ quizName, questionsCount }) => {
                     <h2>Time Left: {timeLeft !== null ? `${Math.floor(timeLeft / 60)}:${timeLeft % 60 < 10 ? '0' : ''}${timeLeft % 60}` : "Loading..."}</h2>
                     <div style={styles.questionInfo}>
                         <h2>Question {currentQuestionIndex + 1} of {questions.length}</h2>
-                        <div style={styles.questionNumbers}>
-                            {questions.map((question, index) => (
-                                <div
-                                    key={question._id}
-                                    style={{
-                                        ...styles.questionNumber,
-                                        backgroundColor: answers[question._id] ? 'green' : 'transparent', // Green if answered
-                                    }}
-                                >
-                                    {index + 1}
-                                </div>
-                            ))}
-                        </div>
                     </div>
                     <form onSubmit={handleSubmitAnswers} style={styles.form}>
                         <div style={styles.questionContainer}>
@@ -189,7 +222,6 @@ const styles = {
         alignItems: "center",
         justifyContent: "center",
         height: "80vh",
-        backgroundColor: "#E0F7FA",
         padding: "20px",
         borderRadius: "8px",
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
@@ -201,29 +233,6 @@ const styles = {
         display: "flex",
         justifyContent: "space-between",
         width: "100%",
-    },
-    questionNumbers: {
-        display: "flex",
-        flexWrap: "wrap",
-        justifyContent: "flex-end",
-        marginLeft: "20px",
-        maxWidth: "150px",
-    },
-    questionNumber: {
-        width: "30px",
-        height: "30px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: "50%",
-        margin: "2px",
-        color: "black",
-        fontWeight: "bold",
-    },
-    form: {
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
     },
     questionContainer: {
         marginBottom: "20px",
