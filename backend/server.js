@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.log(err));
-// Candidate Schema
+// Candidate schema
 const candidateSchema = new mongoose.Schema({
     studentName: { type: String, required: true },
     email: { type: String, required: true ,unique: true },
