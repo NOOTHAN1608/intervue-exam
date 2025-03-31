@@ -1,7 +1,7 @@
 // client/src/components/Student.js
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-const socket = io('http://localhost:10000');
+const socket = io('https://livepolling-exam-backend.onrender.com');
 const Student = () => {
     const [name, setName] = useState('');
     const [poll, setPoll] = useState(null);
