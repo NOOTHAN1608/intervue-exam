@@ -10,7 +10,7 @@ const RegisterCandidates = () => {
         e.preventDefault();
         try {
             // Send data to the backend
-            const response = await axios.post('http://localhost:10000/api/registerCandidate', {
+            const response = await axios.post('https://livepolling-exam-backend.onrender.com', {
                 studentName,
                 email,
                 studentId // Use studentId instead of srn
