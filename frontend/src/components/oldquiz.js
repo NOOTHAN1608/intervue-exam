@@ -22,7 +22,7 @@ const OldQuiz = () => {
     }, []);
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:5000/api/deleteQuiz/${id}`);
+            await axios.delete(`http://localhost:10000/api/deleteQuiz/${id}`);
             setQuizzes(quizzes.filter(quiz => quiz._id !== id));
         } catch (err) {
             setError('Error deleting quiz');
@@ -30,7 +30,7 @@ const OldQuiz = () => {
     };
     const viewResults = async (quizId) => {
         try {
-            const response = await axios.get(`http://localhost:5000/api/getQuizResults/${quizId}`);
+            const response = await axios.get(`http://localhost:10000/api/getQuizResults/${quizId}`);
             setResults(response.data);
             navigate('/components/finalresult');
         } catch (err) {

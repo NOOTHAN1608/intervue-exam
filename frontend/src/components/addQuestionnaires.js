@@ -14,7 +14,7 @@ const AddQuestion = ({ onQuestionAdded }) => {
     const handleQuizNameSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/createQuiz', { quizName });
+            await axios.post('http://localhost:10000/api/createQuiz', { quizName });
             setShowQuestionForm(true); 
         } catch (error) {
             console.error("Error creating quiz:", error);
@@ -27,7 +27,7 @@ const AddQuestion = ({ onQuestionAdded }) => {
             ? { questionNumber, question, type: 'fill-in-the-blank', correctAnswer, quizName }
             : { questionNumber, question, options: [option1, option2, option3, option4], type: 'multiple-choice', correctAnswer, quizName };
         try {
-            const response = await axios.post('http://localhost:5000/api/addQuestion', questionData);
+            const response = await axios.post('http://localhost:10000/api/addQuestion', questionData);
             console.log("Response:", response.data);
             alert("Question added successfully!");
             resetForm();

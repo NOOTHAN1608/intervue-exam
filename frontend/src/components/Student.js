@@ -1,7 +1,7 @@
 // client/src/components/Student.js
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-const socket = io('http://localhost:5000');
+const socket = io('http://localhost:10000');
 const Student = () => {
     const [name, setName] = useState('');
     const [poll, setPoll] = useState(null);

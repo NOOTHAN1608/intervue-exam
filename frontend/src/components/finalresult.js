@@ -13,7 +13,7 @@ const FinalView = ({ quizName }) => {
     const [participants, setParticipants] = useState([]); // State to hold participant names
     const fetchQuestions = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/getQuestions');
+            const response = await axios.get('http://localhost:10000/api/getQuestions');
             setQuestions(response.data);
         } catch (error) {
             console.error("Error fetching questions:", error);
@@ -22,7 +22,7 @@ const FinalView = ({ quizName }) => {
     };
     const fetchCandidates = async () => {
         try {
-            const response = await axios.get('http://localhost:5000/api/getCandidates');
+            const response = await axios.get('http://localhost:10000/api/getCandidates');
             setParticipants(response.data.map(candidate => candidate.studentName)); // Map to get student names
         } catch (error) {
             console.error("Error fetching candidates:", error);
