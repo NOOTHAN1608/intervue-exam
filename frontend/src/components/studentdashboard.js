@@ -12,7 +12,7 @@ const StudentDashboard = ({ quizName }) => {
     const [pollingData, setPollingData] = useState({});
     const fetchQuestions = async () => {
         try {
-            const response = await axios.get('http://localhost:10000/api/getQuestions');
+            const response = await axios.get('https://livepolling-exam-backend.onrender.com');
             setQuestions(response.data);
         } catch (error) {
             console.error("Error fetching questions:", error);
@@ -37,7 +37,7 @@ const StudentDashboard = ({ quizName }) => {
     }, [currentQuestionIndex, questions]);
     const verifyStudentId = async () => {
         try {
-            const response = await axios.get(`http://localhost:10000/api/verifyStudentId/${studentId}`);
+            const response = await axios.get(`https://livepolling-exam-backend.onrender.com/${studentId}`);
             return response.data; 
         } catch (error) {
             console.error("Error verifying Student ID:", error);
@@ -56,7 +56,7 @@ const StudentDashboard = ({ quizName }) => {
             return;
         }
         try {
-            await axios.patch(`http://localhost:10000/api/updateTestStatus`, { studentId });
+            await axios.patch(`https://livepolling-exam-backend.onrender.com`, { studentId });
         } catch (error) {
             console.error("Error updating test status:", error);
             alert("Error starting the test. Please try again.");
@@ -96,14 +96,14 @@ const StudentDashboard = ({ quizName }) => {
             return; 
         }
         try {
-            await axios.post('http://localhost:10000/api/saveAnswer', {
+            await axios.post('https://livepolling-exam-backend.onrender.com', {
                 studentId,
                 questionId: currentQuestion._id,
                 questionNumber: currentQuestion.questionNumber,
                 answer: answers[currentQuestion._id],
             });
             // Update polling data by adding 5 points for the selected answer
-            await axios.post('http://localhost:10000/api/updatePolling', {
+            await axios.post('https://livepolling-exam-backend.onrender.com', {
                 questionId: currentQuestion._id,
                 answer: answers[currentQuestion._id],
                 points: 5
@@ -117,7 +117,7 @@ const StudentDashboard = ({ quizName }) => {
     const handleSubmitAnswers = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:10000/api/submitAnswers', { studentId, answers });
+            await axios.post('https://livepolling-exam-backend.onrender.com', { studentId, answers });
             alert("Answers submitted successfully!");
             window.location.href = '/'; 
         } catch (error) {
