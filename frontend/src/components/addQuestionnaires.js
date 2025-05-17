@@ -15,11 +15,7 @@ const AddQuestion = ({ onQuestionAdded }) => {
         e.preventDefault();
         try {
             await axios.post('https://livepolling-exam-backend.onrender.com', { quizName });
-<<<<<<< HEAD
-            setShowQuestionForm(true); 
-=======
-            setShowQuestionForm(true);
->>>>>>> 2b0993c740f7278006eaa50c6968ea95aab6d8d9
+
         } catch (error) {
             console.error("Error creating quiz:", error);
             alert("Error creating quiz. Please try again.");
