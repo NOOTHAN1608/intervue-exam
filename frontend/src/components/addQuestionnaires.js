@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import axios from 'axios'; 
+import axios from 'axios';
 const AddQuestion = ({ onQuestionAdded }) => {
     const [quizName, setQuizName] = useState('');
     const [showQuestionForm, setShowQuestionForm] = useState(false);
-    const [questionNumber, setQuestionNumber] = useState(''); // New state for question number
+    const [questionNumber, setQuestionNumber] = useState('');
     const [question, setQuestion] = useState('');
     const [option1, setOption1] = useState('');
     const [option2, setOption2] = useState('');
@@ -15,7 +15,11 @@ const AddQuestion = ({ onQuestionAdded }) => {
         e.preventDefault();
         try {
             await axios.post('https://livepolling-exam-backend.onrender.com', { quizName });
+<<<<<<< HEAD
             setShowQuestionForm(true); 
+=======
+            setShowQuestionForm(true);
+>>>>>>> 2b0993c740f7278006eaa50c6968ea95aab6d8d9
         } catch (error) {
             console.error("Error creating quiz:", error);
             alert("Error creating quiz. Please try again.");
@@ -31,9 +35,10 @@ const AddQuestion = ({ onQuestionAdded }) => {
             console.log("Response:", response.data);
             alert("Question added successfully!");
             resetForm();
-            onQuestionAdded(); 
+            onQuestionAdded();
         } catch (error) {
             console.error("Error adding question:", error);
+            alert("Error adding question. Please try again.");
         }
     };
     const resetForm = () => {
@@ -43,7 +48,7 @@ const AddQuestion = ({ onQuestionAdded }) => {
         setOption2('');
         setOption3('');
         setOption4('');
-        setCorrectAnswer(''); 
+        setCorrectAnswer('');
     };
     return (
         <div style={styles.outerContainer}>
@@ -207,7 +212,7 @@ const styles = {
         fontSize: "16px",
         cursor: "pointer",
         transition: "background-color 0.3s",
-        marginTop: "10px", 
+        marginTop: "10px",
     },
 };
 export default AddQuestion;
